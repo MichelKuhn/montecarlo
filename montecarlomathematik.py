@@ -1,25 +1,12 @@
 #Monte Carlo Mathematik
 import random
+from enum import Enum
 
-#Funktional
-def bedingtes_ereignis(wahrscheinlichkeit):
-    wurf = random.randint(1, 100)
-    return wurf <= wahrscheinlichkeit
+class Sortierung(Enum):
+    KEINE = 1
+    PFADLAENGE = 2
+    GEWINN = 3
 
-def sample_path(laenge, wahrscheinlichkeit):
-    cash = 0
-    for i in range(laenge):
-        ereignis = bedingtes_ereignis(wahrscheinlichkeit)
-        if ereignis:
-            cash += 1
-
-    return cash
-
-
-for i in range(1, 10):
-    print(sample_path(100, 50))
-
-#Objektorientiert
 class Ereignis:
     def __init__(self, wahrscheinlichkeit, kraft, fehler = 0):
         self.wahrscheinlichkeit = random.randint(wahrscheinlichkeit - fehler, wahrscheinlichkeit + fehler)
@@ -32,8 +19,39 @@ class Ereignis:
 
         return 0
 
-cash = 0
-for i in range(100):
-    ereignis = Ereignis(50, 5, 1)
-    cash += ereignis.eintreten()
-    
+class Pfad:
+    def __init__(self, laenge):
+        self.ereignisse = []
+        self.laenge = laenge
+        self.cash = 0
+        
+        for i in range(laenge):
+            ereignis = Ereignis(50, 5, 1)
+            self.cash += ereignis.eintreten()
+
+
+class Terminal:
+    def __init__(self, anzahl_pfade):
+        self.anzahl_pfade = anzahl_pfade
+        self.pfade = []
+        for i in range(anzahl_pfade):
+            pfadlaenge = random.randint(10, 1000)
+            pfad = Pfad(pfadlaenge)
+            self.pfade.append(pfad)
+
+    def ausfuehren(self, sortierung=Sortierung.KEINE):
+        if sortierung is Sortierung.PFADLAENGE:
+            self.pfade.sort(key=lambda x: x.laenge)
+        elif sortierung is Sortierung.GEWINN:
+            self.pfade.sort(key=lambda x: x.cash, reverse=True)
+
+        for pfad in self.pfade:
+            print(str(pfad.laenge) + ": " + str(pfad.cash))
+                
+terminal = Terminal(10)
+print("Terminal normal:")
+terminal.ausfuehren()
+print("Terminal sortiert nach Pfadlänge")
+terminal.ausfuehren(Sortierung.PFADLAENGE)
+print("Terminal sortiert nach Gewinn")
+terminal.ausfuehren(Sortierung.GEWINN)
