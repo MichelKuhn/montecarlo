@@ -1,33 +1,51 @@
-#Monte Carlo Mathematik
+# Monte Carlo Mathematik
 import random
 from enum import Enum
+
 
 class Sortierung(Enum):
     KEINE = 1
     PFADLAENGE = 2
     GEWINN = 3
 
+
 class Ereignis:
-    def __init__(self, wahrscheinlichkeit, kraft, fehler = 0):
+    def __init__(self, wahrscheinlichkeit, kraft, fehler=0):
         self.wahrscheinlichkeit = random.randint(wahrscheinlichkeit - fehler, wahrscheinlichkeit + fehler)
-        self.kraft = random.randint(kraft - fehler, kraft + fehler)
+        self.kraft = kraft
+
+    def wurf(self):
+        wurf = random.randint(1, 100)
+        return wurf <= self.wahrscheinlichkeit
 
     def eintreten(self):
-        wurf = random.randint(1, 100)
-        if wurf <= self.wahrscheinlichkeit:
+        if self.wurf():
             return self.kraft
 
         return 0
 
+
+class Wette(Ereignis):
+    def __init__(self, wsk, gewinn, verlust):
+        Ereignis.__init__(self, wsk, gewinn)
+        self.verlust = verlust
+
+    def eintreten(self):
+        if self.wurf():
+            return self.kraft
+        else:
+            return -self.verlust
+
+
 class Pfad:
-    def __init__(self, laenge):
-        self.ereignisse = []
+    def __init__(self, laenge, ereignis):
         self.laenge = laenge
         self.cash = 0
-        
+
         for i in range(laenge):
-            ereignis = Ereignis(50, 5, 1)
             self.cash += ereignis.eintreten()
+            if self.cash <= 0:
+                return
 
 
 class Terminal:
@@ -36,7 +54,7 @@ class Terminal:
         self.pfade = []
         for i in range(anzahl_pfade):
             pfadlaenge = random.randint(10, 1000)
-            pfad = Pfad(pfadlaenge)
+            pfad = Pfad(pfadlaenge, Wette(95, 100, 1000))
             self.pfade.append(pfad)
 
     def ausfuehren(self, sortierung=Sortierung.KEINE):
@@ -47,11 +65,7 @@ class Terminal:
 
         for pfad in self.pfade:
             print(str(pfad.laenge) + ": " + str(pfad.cash))
-                
+
+
 terminal = Terminal(10)
-print("Terminal normal:")
-terminal.ausfuehren()
-print("Terminal sortiert nach Pfadlänge")
-terminal.ausfuehren(Sortierung.PFADLAENGE)
-print("Terminal sortiert nach Gewinn")
 terminal.ausfuehren(Sortierung.GEWINN)
