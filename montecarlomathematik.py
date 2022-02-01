@@ -1,5 +1,5 @@
 # Monte Carlo Mathematik
-import random
+import numpy.random as random
 from enum import Enum
 import matplotlib.pyplot as plt
 import pylab
@@ -12,8 +12,8 @@ class Sortierung(Enum):
 
 
 class Ereignis:
-    def __init__(self, wahrscheinlichkeit, kraft, fehler=0):
-        self.wahrscheinlichkeit = random.randint(wahrscheinlichkeit - fehler, wahrscheinlichkeit + fehler)
+    def __init__(self, wsk, kraft):
+        self.wahrscheinlichkeit = random.normal(wsk, 5)
         self.kraft = kraft
 
     def wurf(self):
@@ -56,7 +56,7 @@ class Terminal:
         self.pfade = []
         for i in range(anzahl_pfade):
             pfadlaenge = random.randint(10, 1000)
-            pfad = Pfad(pfadlaenge, Wette(95, 100, 1000))
+            pfad = Pfad(pfadlaenge, Wette(95, 100, 100000))
             self.pfade.append(pfad)
 
     def ausfuehren(self, sortierung=Sortierung.KEINE):
@@ -83,7 +83,7 @@ fig, ax = plt.subplots()
 # scatter the sepal_length against the sepal_width
 ax.scatter(daten[0], daten[1])
 # set a title and labels
-ax.set_title('Iris Dataset')
+ax.set_title('Endzustand der Pfade')
 ax.set_xlabel('Pfadlaenge')
 ax.set_ylabel('Gewinn')
 
