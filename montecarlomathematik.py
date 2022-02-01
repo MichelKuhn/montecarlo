@@ -1,6 +1,8 @@
 # Monte Carlo Mathematik
 import random
 from enum import Enum
+import matplotlib.pyplot as plt
+import pylab
 
 
 class Sortierung(Enum):
@@ -58,14 +60,31 @@ class Terminal:
             self.pfade.append(pfad)
 
     def ausfuehren(self, sortierung=Sortierung.KEINE):
+        pfadleangen = []
+        gewinne = []
         if sortierung is Sortierung.PFADLAENGE:
             self.pfade.sort(key=lambda x: x.laenge)
         elif sortierung is Sortierung.GEWINN:
             self.pfade.sort(key=lambda x: x.cash, reverse=True)
 
         for pfad in self.pfade:
+            pfadleangen.append(pfad.laenge)
+            gewinne.append(pfad.cash)
             print(str(pfad.laenge) + ": " + str(pfad.cash))
 
+        return [pfadleangen, gewinne]
 
-terminal = Terminal(10)
-terminal.ausfuehren(Sortierung.GEWINN)
+
+terminal = Terminal(100)
+daten = terminal.ausfuehren(Sortierung.GEWINN)
+
+fig, ax = plt.subplots()
+
+# scatter the sepal_length against the sepal_width
+ax.scatter(daten[0], daten[1])
+# set a title and labels
+ax.set_title('Iris Dataset')
+ax.set_xlabel('Pfadlaenge')
+ax.set_ylabel('Gewinn')
+
+pylab.show()
