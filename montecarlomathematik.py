@@ -2,8 +2,11 @@
 import numpy
 import numpy.random as random
 from enum import IntEnum
+import matplotlib
 import matplotlib.pyplot as plt
-import pylab
+import PySimpleGUI as sg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+matplotlib.use("TkAgg")
 
 
 class Sortierung(IntEnum):
@@ -16,6 +19,7 @@ class Strategie(IntEnum):
     WAHRSCHEINLICHKEIT = 0
     ERWARTUNG = 1
     GEWINN = 2
+
 
 class Ereignis:
     def __init__(self, wsk, kraft):
@@ -53,6 +57,7 @@ class Wette(Ereignis):
     def get_gewinn(self):
         return self.kraft - self.verlust
 
+
 class Pfad:
     def __init__(self, laenge, akteur):
         self.gesamtlaenge = laenge
@@ -83,10 +88,10 @@ class Akteur:
 
 
 class Terminal:
-    def __init__(self, anzahl_pfade, ereignispool):
+    def __init__(self, anzahl_pfade, pool):
         self.anzahl_pfade = anzahl_pfade
         self.pfade = []
-        self.ereignispool = ereignispool
+        self.ereignispool = pool
         self.laengster_pfad = 0
 
         for i in range(anzahl_pfade):
@@ -127,14 +132,40 @@ class Terminal:
         return [pfadleangen, gewinne, strategie]
 
 
+class Sitzung:
+    def __init__(self):
+        layout = [[sg.Text("Pfadsimulation mit unterschiedlichen Strategien")],
+                  [sg.Canvas(key="-CANVAS-")],
+                  [sg.Button("OK")]]
+        self.window = sg.Window("Monte Carlo Mathematik", layout, finalize=True)
+
+        self.fig = None
+        self.ax = None
+
+    def plot_generieren(self, daten):
+        self.fig, self.ax = plt.subplots()
+        colormap = numpy.array(["#0000FF", "#00FF00", "#FF0066"])
+        self.ax.scatter(daten[0], daten[1], s=50, c=colormap[daten[2]])
+        self.ax.set_title('Endzustand der Pfade')
+        self.ax.set_xlabel('Pfadlaenge')
+        self.ax.set_ylabel('Gewinn')
+
+        figure_canvas_agg = FigureCanvasTkAgg(self.fig, self.window["-CANVAS-"].TKCanvas)
+        figure_canvas_agg.draw()
+        figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
+        return figure_canvas_agg
+
+
 ereignispool = [Wette(50, 100, 100), Wette(95, 10, 100), Wette(25, 150, 50), Wette(75, 50, 150)]
 terminal = Terminal(200, ereignispool)
-daten = terminal.ausfuehren(Sortierung.GEWINN)
+pfaddaten = terminal.ausfuehren(Sortierung.GEWINN)
 
-fig, ax = plt.subplots()
-colormap = numpy.array(["#0000FF", "#00FF00", "#FF0066"])
-ax.scatter(daten[0], daten[1], s=50, c=colormap[daten[2]])
-ax.set_title('Endzustand der Pfade')
-ax.set_xlabel('Pfadlaenge')
-ax.set_ylabel('Gewinn')
-plt.show()
+sitzung = Sitzung()
+sitzung.plot_generieren(pfaddaten)
+
+while True:
+    event, values = sitzung.window.read()
+    if event == "OK" or event == sg.WIN_CLOSED:
+        break
+
+sitzung.window.close()
