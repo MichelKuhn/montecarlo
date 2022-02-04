@@ -22,9 +22,10 @@ class Strategie(IntEnum):
 
 
 class Ereignis:
-    def __init__(self, wsk, kraft):
+    def __init__(self, wsk, gewinn, verlust=0):
         self.wahrscheinlichkeit = random.normal(wsk, 5)
-        self.kraft = kraft
+        self.gewinn = gewinn
+        self.verlust = verlust
 
     def wurf(self):
         wurf = random.randint(1, 100)
@@ -32,30 +33,18 @@ class Ereignis:
 
     def eintreten(self):
         if self.wurf():
-            return self.kraft
-
-        return 0
-
-
-class Wette(Ereignis):
-    def __init__(self, wsk, gewinn, verlust):
-        Ereignis.__init__(self, wsk, gewinn)
-        self.verlust = verlust
-
-    def eintreten(self):
-        if self.wurf():
-            return self.kraft
-        else:
-            return -self.verlust
+            return self.gewinn
+            
+        return -self.verlust
 
     def get_wsk(self):
         return self.wahrscheinlichkeit
 
     def get_erwartung(self):
-        return self.wahrscheinlichkeit * self.kraft + (1 - self.wahrscheinlichkeit) * self.verlust
+        return self.wahrscheinlichkeit * self.gewinn + (1 - self.wahrscheinlichkeit) * self.verlust
 
     def get_gewinn(self):
-        return self.kraft - self.verlust
+        return self.gewinn
 
 
 class Pfad:
@@ -156,7 +145,7 @@ class Sitzung:
         return figure_canvas_agg
 
 
-ereignispool = [Wette(50, 100, 100), Wette(95, 10, 100), Wette(25, 150, 50), Wette(75, 50, 150)]
+ereignispool = [Ereignis(50, 100, 100), Ereignis(95, 10, 100), Ereignis(25, 150, 50), Ereignis(75, 50, 150)]
 terminal = Terminal(200, ereignispool)
 pfaddaten = terminal.ausfuehren(Sortierung.GEWINN)
 
